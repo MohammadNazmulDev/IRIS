@@ -1,0 +1,20 @@
+# IRIS - Incident Response Integration Suite
+# Dependencies for Python 3.7+
+
+# GUI framework (usually built-in)
+# tkinter - Built into Python, no need to install
+
+# No external dependencies required for MVP
+# All functionality uses built-in Python modules:
+# - subprocess for system commands
+# - json for configuration and data handling
+# - hashlib for file integrity
+# - datetime for timestamps
+# - pathlib for cross-platform file handling
+# - threading for non-blocking operations
+# - os, sys for system integration
+
+# Future enhancements may require:
+# - psutil>=5.8.0  # Better system information
+# - requests>=2.25.0  # For threat intelligence APIs
+# - cryptography>=3.4.0  # Enhanced encryption features

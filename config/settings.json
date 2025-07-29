@@ -1,0 +1,42 @@
+{
+    "application": {
+        "name": "IRIS - Incident Response Integration Suite",
+        "version": "1.0.0-MVP",
+        "debug": false
+    },
+    "evidence_collection": {
+        "output_directory": "output",
+        "hash_algorithms": ["md5", "sha256"],
+        "process_collection": true,
+        "network_collection": true,
+        "system_info_collection": true,
+        "user_accounts_collection": true
+    },
+    "network_isolation": {
+        "emergency_isolation": true,
+        "whitelist_ips": [],
+        "dns_blocking": true,
+        "log_blocked_connections": true
+    },
+    "forensics": {
+        "memory_snapshot": true,
+        "log_collection": true,
+        "browser_artifacts": true,
+        "recent_files": true,
+        "screenshots": true,
+        "max_log_size_mb": 100
+    },
+    "reporting": {
+        "formats": ["txt", "html"],
+        "include_timestamps": true,
+        "include_hashes": true,
+        "generate_timeline": true
+    },
+    "gui": {
+        "theme": "brutalist",
+        "font_family": "Courier",
+        "window_width": 1200,
+        "window_height": 800,
+        "terminal_height": 300
+    }
+}
