@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 
 from gui.brutalist_theme import BrutalistTheme
+from tkinter import ttk
 
 class MainWindow:
     def __init__(self, root, config, platform):
@@ -17,6 +18,33 @@ class MainWindow:
         
         BrutalistTheme.configure_root(self.root)
         self.setup_ui()
+    
+    def create_scrollable_section(self, parent, title_text):
+        """Helper function to create a scrollable section with title"""
+        frame = BrutalistTheme.create_frame(parent)
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(1, weight=1)
+        
+        title = BrutalistTheme.create_label(frame, title_text, 'button')
+        title.grid(row=0, column=0, pady=10)
+        
+        canvas = tk.Canvas(frame, bg='white', bd=2, relief='solid')
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='white')
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.grid(row=1, column=0, sticky='nsew')
+        scrollbar.grid(row=1, column=1, sticky='ns')
+        scrollable_frame.grid_columnconfigure(0, weight=1)
+        
+        return frame, scrollable_frame
         
     def setup_ui(self):
         self.root.grid_columnconfigure(0, weight=1)
@@ -50,9 +78,9 @@ class MainWindow:
         main_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=5)
         main_frame.grid_columnconfigure(0, weight=1)
         main_frame.grid_columnconfigure(1, weight=1)
-        main_frame.grid_rowconfigure(0, weight=1)
-        main_frame.grid_rowconfigure(1, weight=1)
-        main_frame.grid_rowconfigure(2, weight=2)
+        main_frame.grid_rowconfigure(0, weight=2)
+        main_frame.grid_rowconfigure(1, weight=2)
+        main_frame.grid_rowconfigure(2, weight=1)
         
         self.create_evidence_section(main_frame)
         self.create_isolation_section(main_frame)
@@ -61,151 +89,80 @@ class MainWindow:
         self.create_terminal_section(main_frame)
         
     def create_evidence_section(self, parent):
-        evidence_frame = BrutalistTheme.create_frame(parent)
+        evidence_frame, scrollable_frame = self.create_scrollable_section(parent, "SYSTEM EVIDENCE COLLECTOR")
         evidence_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-        evidence_frame.grid_columnconfigure(0, weight=1)
         
-        title = BrutalistTheme.create_label(evidence_frame, "SYSTEM EVIDENCE COLLECTOR", 'button')
-        title.grid(row=0, column=0, pady=10)
+        buttons = [
+            ("ENUMERATE PROCESSES", "processes"),
+            ("NETWORK CONNECTIONS", "network"), 
+            ("SYSTEM INFORMATION", "sysinfo"),
+            ("USER ACCOUNTS", "users"),
+            ("FILE HASHING", "hash")
+        ]
         
-        btn_processes = BrutalistTheme.create_button(
-            evidence_frame, "ENUMERATE PROCESSES", 
-            lambda: self.run_operation("evidence", "processes")
-        )
-        btn_processes.grid(row=1, column=0, pady=2)
-        
-        btn_network = BrutalistTheme.create_button(
-            evidence_frame, "NETWORK CONNECTIONS", 
-            lambda: self.run_operation("evidence", "network")
-        )
-        btn_network.grid(row=2, column=0, pady=2)
-        
-        btn_sysinfo = BrutalistTheme.create_button(
-            evidence_frame, "SYSTEM INFORMATION", 
-            lambda: self.run_operation("evidence", "sysinfo")
-        )
-        btn_sysinfo.grid(row=3, column=0, pady=2)
-        
-        
-        btn_hash = BrutalistTheme.create_button(
-            evidence_frame, "FILE HASHING", 
-            lambda: self.run_operation("evidence", "hash")
-        )
-        btn_hash.grid(row=4, column=0, pady=2)
+        for i, (text, operation) in enumerate(buttons):
+            btn = BrutalistTheme.create_button(
+                scrollable_frame, text,
+                lambda op=operation: self.run_operation("evidence", op)
+            )
+            btn.grid(row=i, column=0, pady=2, padx=5, sticky='ew')
         
     def create_isolation_section(self, parent):
-        isolation_frame = BrutalistTheme.create_frame(parent)
+        isolation_frame, scrollable_frame = self.create_scrollable_section(parent, "NETWORK ISOLATION")
         isolation_frame.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-        isolation_frame.grid_columnconfigure(0, weight=1)
         
-        title = BrutalistTheme.create_label(isolation_frame, "NETWORK ISOLATION", 'button')
-        title.grid(row=0, column=0, pady=10)
+        buttons = [
+            ("EMERGENCY ISOLATION", "emergency"),
+            ("MANAGE WHITELIST", "whitelist"),
+            ("KILL CONNECTIONS", "kill"),
+            ("BLOCK DNS", "dns"),
+            ("ISOLATION STATUS", "status")
+        ]
         
-        btn_emergency = BrutalistTheme.create_button(
-            isolation_frame, "EMERGENCY ISOLATION", 
-            lambda: self.run_operation("isolation", "emergency")
-        )
-        btn_emergency.grid(row=1, column=0, pady=2)
-        
-        btn_whitelist = BrutalistTheme.create_button(
-            isolation_frame, "MANAGE WHITELIST", 
-            lambda: self.run_operation("isolation", "whitelist")
-        )
-        btn_whitelist.grid(row=2, column=0, pady=2)
-        
-        btn_kill_conn = BrutalistTheme.create_button(
-            isolation_frame, "KILL CONNECTIONS", 
-            lambda: self.run_operation("isolation", "kill")
-        )
-        btn_kill_conn.grid(row=3, column=0, pady=2)
-        
-        btn_dns_block = BrutalistTheme.create_button(
-            isolation_frame, "BLOCK DNS", 
-            lambda: self.run_operation("isolation", "dns")
-        )
-        btn_dns_block.grid(row=4, column=0, pady=2)
-        
-        btn_status = BrutalistTheme.create_button(
-            isolation_frame, "ISOLATION STATUS", 
-            lambda: self.run_operation("isolation", "status")
-        )
-        btn_status.grid(row=5, column=0, pady=2)
+        for i, (text, operation) in enumerate(buttons):
+            btn = BrutalistTheme.create_button(
+                scrollable_frame, text,
+                lambda op=operation: self.run_operation("isolation", op)
+            )
+            btn.grid(row=i, column=0, pady=2, padx=5, sticky='ew')
         
     def create_forensics_section(self, parent):
-        forensics_frame = BrutalistTheme.create_frame(parent)
+        forensics_frame, scrollable_frame = self.create_scrollable_section(parent, "FORENSIC COLLECTION")
         forensics_frame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
-        forensics_frame.grid_columnconfigure(0, weight=1)
         
-        title = BrutalistTheme.create_label(forensics_frame, "FORENSIC COLLECTION", 'button')
-        title.grid(row=0, column=0, pady=10)
+        buttons = [
+            ("MEMORY SNAPSHOT", "memory"),
+            ("COLLECT LOGS", "logs"),
+            ("BROWSER ARTIFACTS", "browser"),
+            ("RECENT FILES", "files"),
+            ("TAKE SCREENSHOT", "screenshot")
+        ]
         
-        btn_memory = BrutalistTheme.create_button(
-            forensics_frame, "MEMORY SNAPSHOT", 
-            lambda: self.run_operation("forensics", "memory")
-        )
-        btn_memory.grid(row=1, column=0, pady=2)
-        
-        btn_logs = BrutalistTheme.create_button(
-            forensics_frame, "COLLECT LOGS", 
-            lambda: self.run_operation("forensics", "logs")
-        )
-        btn_logs.grid(row=2, column=0, pady=2)
-        
-        btn_browser = BrutalistTheme.create_button(
-            forensics_frame, "BROWSER ARTIFACTS", 
-            lambda: self.run_operation("forensics", "browser")
-        )
-        btn_browser.grid(row=3, column=0, pady=2)
-        
-        btn_files = BrutalistTheme.create_button(
-            forensics_frame, "RECENT FILES", 
-            lambda: self.run_operation("forensics", "files")
-        )
-        btn_files.grid(row=4, column=0, pady=2)
-        
-        btn_screenshot = BrutalistTheme.create_button(
-            forensics_frame, "TAKE SCREENSHOT", 
-            lambda: self.run_operation("forensics", "screenshot")
-        )
-        btn_screenshot.grid(row=5, column=0, pady=2)
+        for i, (text, operation) in enumerate(buttons):
+            btn = BrutalistTheme.create_button(
+                scrollable_frame, text,
+                lambda op=operation: self.run_operation("forensics", op)
+            )
+            btn.grid(row=i, column=0, pady=2, padx=5, sticky='ew')
         
     def create_reports_section(self, parent):
-        reports_frame = BrutalistTheme.create_frame(parent)
+        reports_frame, scrollable_frame = self.create_scrollable_section(parent, "REPORT GENERATOR")
         reports_frame.grid(row=1, column=1, sticky='nsew', padx=5, pady=5)
-        reports_frame.grid_columnconfigure(0, weight=1)
         
-        title = BrutalistTheme.create_label(reports_frame, "REPORT GENERATOR", 'button')
-        title.grid(row=0, column=0, pady=10)
+        buttons = [
+            ("EVIDENCE INVENTORY", "inventory"),
+            ("GENERATE TIMELINE", "timeline"),
+            ("SYSTEM SUMMARY", "summary"),
+            ("EXPORT TEXT", "export_txt"),
+            ("EXPORT HTML", "export_html")
+        ]
         
-        btn_inventory = BrutalistTheme.create_button(
-            reports_frame, "EVIDENCE INVENTORY", 
-            lambda: self.run_operation("reports", "inventory")
-        )
-        btn_inventory.grid(row=1, column=0, pady=2)
-        
-        btn_timeline = BrutalistTheme.create_button(
-            reports_frame, "GENERATE TIMELINE", 
-            lambda: self.run_operation("reports", "timeline")
-        )
-        btn_timeline.grid(row=2, column=0, pady=2)
-        
-        btn_summary = BrutalistTheme.create_button(
-            reports_frame, "SYSTEM SUMMARY", 
-            lambda: self.run_operation("reports", "summary")
-        )
-        btn_summary.grid(row=3, column=0, pady=2)
-        
-        btn_export_txt = BrutalistTheme.create_button(
-            reports_frame, "EXPORT TEXT", 
-            lambda: self.run_operation("reports", "export_txt")
-        )
-        btn_export_txt.grid(row=4, column=0, pady=2)
-        
-        btn_export_html = BrutalistTheme.create_button(
-            reports_frame, "EXPORT HTML", 
-            lambda: self.run_operation("reports", "export_html")
-        )
-        btn_export_html.grid(row=5, column=0, pady=2)
+        for i, (text, operation) in enumerate(buttons):
+            btn = BrutalistTheme.create_button(
+                scrollable_frame, text,
+                lambda op=operation: self.run_operation("reports", op)
+            )
+            btn.grid(row=i, column=0, pady=2, padx=5, sticky='ew')
         
     def create_terminal_section(self, parent):
         terminal_frame = BrutalistTheme.create_frame(parent)

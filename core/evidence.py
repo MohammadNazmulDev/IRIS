@@ -17,6 +17,7 @@ class EvidenceCollector:
             'processes': self.collect_processes,
             'network': self.collect_network,
             'sysinfo': self.collect_system_info,
+            'users': self.collect_users,
             'hash': self.hash_files
         }
         

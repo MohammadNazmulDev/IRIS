@@ -347,18 +347,45 @@ class ForensicsCollector:
             return None
     
     def take_screenshot(self, log_callback):
-        log_callback("Taking desktop screenshot...")
+        log_callback("Minimizing IRIS and taking desktop screenshot...")
+        import time
+        
+        # Minimize all windows to show desktop only
+        try:
+            if self.platform == 'linux':
+                # Try different ways to minimize all windows and show desktop
+                minimize_commands = [
+                    ['wmctrl', '-k', 'on'],  # Show desktop
+                    ['xdotool', 'key', 'Super+d'],  # Windows+D equivalent
+                    ['xdotool', 'key', 'ctrl+alt+d'],  # Alternative show desktop
+                ]
+                
+                for cmd in minimize_commands:
+                    try:
+                        subprocess.run(cmd, check=True, capture_output=True, timeout=2)
+                        log_callback(f"Minimized windows with {cmd[0]}")
+                        break
+                    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+                        continue
+                        
+            time.sleep(3)  # Give more time for windows to minimize
+        except Exception as e:
+            log_callback(f"Could not minimize windows: {e}")
+            time.sleep(2)  # Still wait a bit
+            
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
             if self.platform == 'linux':
                 screenshot_file = self.output_dir / f"screenshot_{timestamp}.png"
                 
-                # Try different screenshot tools
+                # Try different screenshot tools - force full desktop capture
                 screenshot_commands = [
-                    ['scrot', str(screenshot_file)],
-                    ['gnome-screenshot', '-f', str(screenshot_file)],
-                    ['import', '-window', 'root', str(screenshot_file)]
+                    ['scrot', '--multidisp', str(screenshot_file)],  # Full desktop including multiple displays
+                    ['scrot', str(screenshot_file)],  # Fallback to basic scrot
+                    ['import', '-window', 'root', str(screenshot_file)],  # ImageMagick full desktop
+                    ['gnome-screenshot', '--file', str(screenshot_file)],  # GNOME screenshot
+                    ['maim', str(screenshot_file)]  # Alternative screenshot tool
                 ]
                 
                 screenshot_taken = False
@@ -380,6 +407,23 @@ class ForensicsCollector:
                         f.write("Could not take screenshot - no suitable tool found\n")
                         f.write("Install scrot, gnome-screenshot, or imagemagick for screenshots\n")
                     log_callback("No screenshot tool available")
+                
+                # Restore windows after screenshot
+                try:
+                    restore_commands = [
+                        ['wmctrl', '-k', 'off'],  # Restore windows
+                        ['xdotool', 'key', 'Super+d'],  # Toggle show desktop off
+                    ]
+                    
+                    for cmd in restore_commands:
+                        try:
+                            subprocess.run(cmd, check=True, capture_output=True, timeout=2)
+                            log_callback(f"Restored windows with {cmd[0]}")
+                            break
+                        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+                            continue
+                except Exception:
+                    pass  # Don't worry if restore fails
                 
             else:  # Windows
                 screenshot_file = self.output_dir / f"screenshot_{timestamp}.png"

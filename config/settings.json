@@ -36,7 +36,7 @@
         "theme": "brutalist",
         "font_family": "Courier",
         "window_width": 1200,
-        "window_height": 800,
-        "terminal_height": 300
+        "window_height": 900,
+        "terminal_height": 200
     }
 }
