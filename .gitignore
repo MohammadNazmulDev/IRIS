@@ -45,4 +45,3 @@ output/*.log
 output/logs_*/
 output/browser_artifacts_*/
 
-# Note: .claude/ is intentionally NOT ignored - it contains project configuration
